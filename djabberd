@@ -1,0 +1,65 @@
+#!/usr/bin/perl
+
+BEGIN {
+    # tell debugger of sub enter/exit,
+    $^P |= 0x01  if     $ENV{TRACE_DJABBERD};
+    # keep descriptive string value of all anon subs maintained per coderef:
+    $^P |= 0x200 unless $ENV{NDEBUG_SUB_NAMES};
+};
+
+use strict;
+use lib 'lib';
+use DJabberd;
+use Getopt::Long;
+use FindBin qw($Bin);
+use vars qw($DEBUG);
+$DEBUG = 0;
+
+my ($daemonize);
+
+my $conffile;
+
+Getopt::Long::GetOptions(
+                         'd|daemon'     => \$daemonize,
+                         'debug=i'      => \$DEBUG,
+                         'conffile=s'   => \$conffile,
+                         );
+
+
+my $server = DJabberd->new(
+                           daemonize => $daemonize
+                           );
+
+my @try_conf = ( $conffile, "/etc/djabberd/djabberd.conf", "djabberd.conf" );
+shift @try_conf while @try_conf && ! -e $try_conf[0];
+die "No configuration file found, please specify --conffile argument.\n" unless @try_conf;
+
+$server->load_config($try_conf[0]);
+
+$server->run;
+
+package DB;
+no strict 'refs';
+no utf8;
+
+sub DB{};
+sub sub {
+    # localize CALL_DEPTH so that we don't need to decrement it after the sub
+    # is called
+    local $DB::CALL_DEPTH = $DB::CALL_DEPTH+1;
+    #my @foo = @_;
+    my $fileline = "";
+    if (ref $DB::sub eq "CODE") {
+        my @caller = caller;
+        my $pkg = $caller[0];
+        my $line = $caller[2];
+        $fileline = " called from $pkg, line $line";
+    }
+    warn ("." x $DB::CALL_DEPTH . " ($DB::CALL_DEPTH) $DB::sub$fileline\n");
+
+    # Call our subroutine. @_ gets passed on for us.
+    # by calling it last, we don't need to worry about "wantarray", etc
+    # by returning it like this, the caller's expectations are conveyed to
+    # the called routine
+    &{$DB::sub};
+}
