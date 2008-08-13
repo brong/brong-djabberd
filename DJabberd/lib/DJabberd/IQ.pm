@@ -492,6 +492,10 @@ sub process_iq_setauth {
     my $password = $get->("password");
     my $digest   = $get->("digest");
 
+    # XXX FIXME
+    # if a username contains \W, we return here and the client is left
+    # hanging in authentication state. We should at least send back
+    # an error/reject of some sort --kane
     return unless $username =~ /^\w+$/;
 
     my $vhost = $conn->vhost;
