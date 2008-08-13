@@ -416,7 +416,7 @@ sub process_iq_setregister {
     #   http://www.xmpp.org/extensions/xep-0029.html#sect-id2252650
     # Issue outlined on the mailinglist:
     #   http://lists.danga.com/pipermail/djabberd/2008-August/000632.html
-    return $iq->send_error unless $username =~ /^[\w+-]$/;
+    return $iq->send_error unless $username =~ /^[\w+-]+$/;
     return $iq->send_error if $bjid && $bjid->node ne $username;
 
     # create the account
