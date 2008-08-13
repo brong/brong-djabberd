@@ -30,10 +30,14 @@ for my $aref( [partya => 1], [partyb => 1], ["foo$$" => 0] ) {
 
     ### for the todo test, see this mail to the mailinglist:
     ### http://lists.danga.com/pipermail/djabberd/2008-August/000623.html
-    my $rv = $client->login;
-    $ok_login
-        ? ok( $rv,              "   $user logged in" )
-        : do {  local $TODO = "::StaticPassword interfers with ::AllowedUsers"; 
-                ok( !$rv,             "   $user log in denied" );
-            };            
+    my $rv = eval { $client->login };
+    if ($ok_login) {
+        ok( $rv,                "   $user logged in" )
+
+    } else {      
+        local $TODO = "::StaticPassword interferes with ::AllowedUsers"; 
+        ok( !$rv,               "   $user log in denied" );
+        like( $@, qr/bad password/,
+                                "       With proper error: $@" );      
+    };            
 }
