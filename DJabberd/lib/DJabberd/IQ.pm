@@ -410,7 +410,13 @@ sub process_iq_setregister {
 
     my $username = $get->("username");
     my $password = $get->("password");
-    return $iq->send_error unless $username =~ /^\w+$/;
+
+    # XXX hack to make - supported as well, should implement full JID
+    # as outlined in the spec here:
+    #   http://www.xmpp.org/extensions/xep-0029.html#sect-id2252650
+    # Issue outlined on the mailinglist:
+    #   http://lists.danga.com/pipermail/djabberd/2008-August/000632.html
+    return $iq->send_error unless $username =~ /^[\w+-]$/;
     return $iq->send_error if $bjid && $bjid->node ne $username;
 
     # create the account
@@ -458,8 +464,13 @@ sub process_iq_getauth {
     }
 
     # FIXME:  use nodeprep or whatever, not \w+
-    $username = '' unless $username =~ /^\w+$/;
-
+    # XXX hack to make - supported as well, should implement full JID
+    # as outlined in the spec here:
+    #   http://www.xmpp.org/extensions/xep-0029.html#sect-id2252650
+    # Issue outlined on the mailinglist:
+    #   http://lists.danga.com/pipermail/djabberd/2008-August/000632.html
+    $username = '' unless $username =~ /^[\w+-]+$/;
+    
     my $type = ($conn->vhost->are_hooks("GetPassword") ||
                 $conn->vhost->are_hooks("CheckDigest")) ? "<digest/>" : "<password/>";
 
@@ -496,8 +507,13 @@ sub process_iq_setauth {
     # if a username contains \W, we return here and the client is left
     # hanging in authentication state. We should at least send back
     # an error/reject of some sort --kane
-    return unless $username =~ /^\w+$/;
-
+    # XXX hack to make - supported as well, should implement full JID
+    # as outlined in the spec here:
+    #   http://www.xmpp.org/extensions/xep-0029.html#sect-id2252650
+    # Issue outlined on the mailinglist:
+    #   http://lists.danga.com/pipermail/djabberd/2008-August/000632.html
+    return unless $username =~ /^[\w+-]+$/;
+    
     my $vhost = $conn->vhost;
 
     my $reject = sub {
