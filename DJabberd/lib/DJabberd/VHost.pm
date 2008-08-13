@@ -40,6 +40,9 @@ sub new {
 
         disco_kids      => {},  # $jid_str -> "Description" - children of this vhost for service discovery
         plugin_types    => {},  # ref($plugin instance) -> 1
+        
+        plugin_objects  => {},  # __all => [ $p1, $p2, $p3, ... ],  # all objects
+                                # class => [ $p2, $p3 ],            # all objs that ISA class
     };
 
     croak("Missing/invalid vhost name") unless
@@ -313,7 +316,14 @@ sub name {
 sub add_plugin {
     my ($self, $plugin) = @_;
     $logger->info("Adding plugin: $plugin");
+
+    # store that we have one of these types loaded
+    # XXX can we increment this, to show how many are loaded
+    # of a certain type? --kane
     $self->{plugin_types}{ref $plugin} = 1;
+
+    # store the object for later retrieval
+    push @{ $self->{plugin_objects}{__all} ||= [] }, $plugin;
     $plugin->register($self);
 }
 
@@ -328,9 +338,37 @@ sub are_hooks {
     return scalar @{ $self->{hooks}{$phase} || [] } ? 1 : 0;
 }
 
+# bool yes/no answer
 sub has_plugin_of_type {
     my ($self, $class) = @_;
     return $self->{plugin_types}{$class};
+}
+
+# all plugin objects that ISA the class you ask for
+sub find_plugin_object_of_type {
+    my ($self, $class) = @_;
+    
+    # if you didn't provide a class, you will get all objects
+    $class ||= '__all';
+
+    # did we do this look up before? return what we
+    # found last time.
+    my $aref = $self->{plugin_objects}{$class};
+    return @$aref if ref $aref;
+
+    # haven't looked at this before, iterate over all objects,
+    # find which one are of the class you want
+    for my $obj (@{ $self->{plugin_objects}{__all} || [] }) {
+
+        # it's the right class, store it now
+        push @{ $self->{plugin_objects}{$class} ||= [] }, $obj
+            if UNIVERSAL::isa( $obj, $class );
+    }
+    
+    # return what we found. if that's nothing, store an empty list
+    # so we dont have to iterate through all objects next time the
+    # same requests comes
+    return @{ $self->{plugin_objects}{$class} ||= [] };
 }
 
 sub register_hook {
