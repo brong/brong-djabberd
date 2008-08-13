@@ -55,7 +55,15 @@ $hook{'CheckJID'} = {
     },
 };
 
-
+$hook{'CheckUsername'} = {
+    des => "Check a provided username and see if it comforms to the username spec. Built-in spec is very limited, but can be extended usign this hook",
+    args => [ '$username', ],
+    callbacks => {
+        accept => [],
+        reject => [],
+    },
+};    
+    
 $hook{'pre_stanza_write'} = {
     des => "Called before a stanza is written to a user.  Default action if all declined is to just deliver it.",
 };

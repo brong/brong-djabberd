@@ -120,6 +120,11 @@ sub setup_default_plugins {
     unless ($self->are_hooks("PresenceCheck")) {
         $self->add_plugin(DJabberd::PresenceChecker::Local->new);
     }
+
+    unless ($self->are_hooks("CheckUsername")) {
+        require DJabberd::Plugin::CheckUsername;
+        $self->add_plugin(DJabberd::Plugin::CheckUsername->new);
+    }
 }
 
 sub quirksmode { $_[0]{quirksmode} };
