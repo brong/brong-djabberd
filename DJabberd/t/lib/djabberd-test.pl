@@ -242,7 +242,9 @@ sub roster {
 
 sub standard_plugins {
     my $self = shift;
-    return [
+    return [# load ::Allowedusers before ::StaticPassword, since the GetPassword hook
+            # terminates when ->set is called on the callback, which ::StaticPassword
+            # will always do.
             DJabberd::Authen::AllowedUsers->new(policy => "deny",
                                                 allowedusers => [qw(partya partyb)]),
             DJabberd::Authen::StaticPassword->new(password => "password"),

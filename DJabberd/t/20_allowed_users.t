@@ -35,7 +35,6 @@ for my $aref( [partya => 1], [partyb => 1], ["foo$$" => 0] ) {
         ok( $rv,                "   $user logged in" )
 
     } else {      
-        local $TODO = "::StaticPassword interferes with ::AllowedUsers"; 
         ok( !$rv,               "   $user log in denied" );
         like( $@, qr/bad password/,
                                 "       With proper error: $@" );      
