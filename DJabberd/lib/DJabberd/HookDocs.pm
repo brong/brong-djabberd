@@ -19,9 +19,9 @@ $hook{'switch_incoming_client'} = {};
 $hook{'filter_incoming_server'} = {};
 $hook{'switch_incoming_server'} = {};
 
-
+# q[ ] since we use ' and non-interpolated variables
 $hook{'GetPassword'} = {
-    des => "Lookup a user's plaintext password",
+    des => q[Called when a client tries to authenticate. The hook is asked to lookup and return a user's plaintext password via $cb->set( $pass ). If the hook returns the password, DJabberd::IQ will validate the password and either accept or reject the authentication. If you want to do your own validation, do not allow a GetPassword hook to be registered that returns the password via the callback, and use the CheckCleartext or CheckDigest hooks instead],
     args => [ "username" => '$username', "conn" => 'Connection', ],
     callbacks => {
         set => ['password'],
