@@ -2,7 +2,6 @@ package DJabberd::Plugin::VCard;
 use strict;
 use base 'DJabberd::Plugin';
 use warnings;
-use DJabberd::Plugin::VCard::IQ;
 
 our $logger = DJabberd::Log->get_logger();
 
@@ -36,12 +35,10 @@ sub register {
             }
         }
         if ($iq->signature eq 'get-{vcard-temp}vCard') {
-            bless $iq, $self->iq_class;
             $self->get_vcard($vh, $iq);
             $cb->stop_chain;
             return;
         } elsif ($iq->signature eq 'set-{vcard-temp}vCard') {
-            bless $iq, $self->iq_class;
             $self->set_vcard($vh, $iq);
             $cb->stop_chain;
             return;
